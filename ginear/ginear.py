@@ -71,6 +71,9 @@ def run_onboarding() -> None:
     from pyfzf.pyfzf import FzfPrompt
 
     if not LINEAR_API_TOKEN:
+        import webbrowser
+
+        webbrowser.open("https://linear.app/settings/api")
         linear_api_token = input(
             "Insert Personal API Key (https://linear.app/settings/api): "
         )
@@ -153,7 +156,7 @@ def run_ticket() -> None:
 
 
 def run() -> None:
-    if TEAM_ID and PROJECT_ID and USER_ID and INITIAL_STATE_ID:
+    if LINEAR_API_TOKEN and TEAM_ID and PROJECT_ID and USER_ID and INITIAL_STATE_ID:
         run_ticket()
     else:
         print("🍸 Initializing ginear 🍸")
