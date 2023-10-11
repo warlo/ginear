@@ -6,15 +6,17 @@ authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 python-dotenv = "^1.0.0"
 pyfzf = "^0.3.1"
 requests = "^2.31.0"
-mypy = "^1.6.0"
-types-requests = "^2.31.0.8"
 
 [tool.poetry.scripts]
 gin = "ginear.ginear:run"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.6.0"
+types-requests = "^2.31.0.8"
 
 [build-system]
 requires = ["poetry-core"]
