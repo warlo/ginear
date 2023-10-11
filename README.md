@@ -1,5 +1,7 @@
 # Ginear 🍸
 
+[![PyPI version](https://badge.fury.io/py/ginear.svg)](https://badge.fury.io/py/ginear)
+
 Ginear is the perfect blend of Git and Linear, creating a seamless integration that allows you to attach or create Linear issues with automatic branch switching.
 
 ## Prerequisites
