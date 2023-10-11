@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "ginear"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Hans-Wilhelm Warlo <5417271+warlo@users.noreply.github.com>"]
 readme = "README.md"
+repository = "https://github.com/warlo/ginear/"
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -21,3 +22,8 @@ types-requests = "^2.31.0.8"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+ignore_missing_imports = true
+strict = true
+exclude = "venv"
