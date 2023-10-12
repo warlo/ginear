@@ -40,7 +40,6 @@ def attach_issue_prompt() -> None:
     fzf = FzfPrompt()
     selected_list = fzf.prompt(
         [
-            "> SKIP",
             "> Create new issue",
             *[
                 f"[{issue['creator']['name'][:10]}] – {issue['title']}"
@@ -147,17 +146,10 @@ def run_onboarding() -> None:
     print("🍸 Onboarding success 🍸")
 
 
-def run_ticket() -> None:
-    linear_ticket_input = input("🍸 Ginear ticket (y/N)?: ") or "N"
-    if linear_ticket_input == "y":
-        attach_issue_prompt()
-    else:
-        print("Skipping ticket")
-
-
 def run() -> None:
     if LINEAR_API_TOKEN and TEAM_ID and PROJECT_ID and USER_ID and INITIAL_STATE_ID:
-        run_ticket()
+        print("🍸 Ginear ticket 🍸")
+        attach_issue_prompt()
     else:
         print("🍸 Initializing ginear 🍸")
         run_onboarding()
