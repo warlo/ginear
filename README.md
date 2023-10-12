@@ -4,7 +4,7 @@
 
 Ginear is the perfect blend of Git and Linear, creating a seamless integration that allows you to attach or create Linear issues with automatic branch switching.
 
-![ginear](https://github.com/warlo/ginear/assets/5417271/f233c354-af8e-4ed5-8d00-1cfa84a781ed)
+![ginear](https://github.com/warlo/ginear/assets/5417271/607660c6-e49e-4244-bcf9-327004c94e02)
 
 
 ## Prerequisites
