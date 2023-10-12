@@ -149,23 +149,24 @@ def get_issues() -> list[dict[str, Any]]:
 
 def create_issue(title: str, description: str) -> None:
     mutation = """
-    mutation IssueCreate($title: String!, $description: String!, $teamId: String!, $assigneeId: String!, $stateId: String!) {
+    mutation IssueCreate($title: String!, $description: String!, $teamId: String!, $assigneeId: String!, $stateId: String!, $projectId: String!) {
     issueCreate(
         input: {
-        title: $title
-        description: $description
-        teamId: $teamId
-        assigneeId: $assigneeId
-        stateId: $stateId
+            title: $title
+            description: $description
+            teamId: $teamId
+            assigneeId: $assigneeId
+            stateId: $stateId
+            projectId: $projectId
         }
     ) {
         success
-        issue {
-        id
-        title
-        branchName
+            issue {
+                id
+                title
+                branchName
+            }
         }
-    }
     }
     """
 
@@ -175,6 +176,7 @@ def create_issue(title: str, description: str) -> None:
         "teamId": TEAM_ID,
         "assigneeId": USER_ID,
         "stateId": INITIAL_STATE_ID,
+        "projectId": PROJECT_ID,
     }
 
     request_data = {"query": mutation, "variables": mutation_variables}
