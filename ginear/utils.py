@@ -1,12 +1,17 @@
 # /usr/bin/env python3
 from pathlib import Path
 
+from dotenv import set_key, unset_key
+
 DOTFILE_PATH = Path.home() / ".ginear"
 
 
 def write_to_env(key: str, value: str) -> None:
-    with open(DOTFILE_PATH, "a") as env_file:
-        env_file.write(f"\n{key}={value}\n")
+    set_key(DOTFILE_PATH, key, value)
+
+
+def clear_env_key(key: str) -> None:
+    unset_key(DOTFILE_PATH, key)
 
 
 def switch_branch(branch_name: str) -> None:

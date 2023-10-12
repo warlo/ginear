@@ -6,7 +6,7 @@ from typing import Any, cast
 import requests
 from dotenv import load_dotenv
 
-from ginear.utils import DOTFILE_PATH, switch_branch
+from ginear.utils import DOTFILE_PATH, clear_env_key, switch_branch
 
 load_dotenv(dotenv_path=DOTFILE_PATH)
 
@@ -212,7 +212,17 @@ def call_linear_api(request_data: dict[str, Any]) -> dict[str, Any]:
     if "errors" in response_data:
         print(f"Error calling {api_endpoint}")
         print(response_data["errors"])
-        return {}
+        try:
+            if (
+                response_data["errors"][0]["extensions"]["code"]
+                == "AUTHENTICATION_ERROR"
+            ):
+                clear_env_key("LINEAR_API_TOKEN")
+            raise ValueError("Invalid API token")
+        except Exception:
+            pass
+
+        raise Exception("Unknown API error")
 
     result = response_data["data"]
     return cast(dict[str, Any], result)
