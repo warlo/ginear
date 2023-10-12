@@ -6,7 +6,6 @@ Ginear is the perfect blend of Git and Linear, creating a seamless integration t
 
 ![ginear](https://github.com/warlo/ginear/assets/5417271/607660c6-e49e-4244-bcf9-327004c94e02)
 
-
 ## Prerequisites
 
 Before using Ginear, make sure you have the following prerequisites installed:
@@ -50,3 +49,7 @@ Use `gin create` to create a new Linear issue directly from the command line. Gi
 ### `gin project`
 
 With `gin project`, you can switch to a different Linear project within your organization. This command allows you to change your project context, and Ginear will adapt to the selected project's settings.
+
+### `gin team`
+
+The `gin team` command allows you to switch between different teams within your organization. When you run `gin team`, Ginear will prompt you to select the team you want to work with from a list of available options.
