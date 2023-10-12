@@ -166,7 +166,6 @@ def project() -> None:
 
 @app.command()
 def create() -> None:
-    print("🍸 Ginear ticket 🍸")
     title = typer.prompt("Title")
     description = typer.prompt("Description")
     create_issue(title, description)
@@ -174,14 +173,13 @@ def create() -> None:
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context) -> None:
+    print("🍸 Initializing ginear 🍸")
     if ctx.invoked_subcommand:
         return
 
     if LINEAR_API_TOKEN and TEAM_ID and PROJECT_ID and USER_ID and INITIAL_STATE_ID:
-        print("🍸 Ginear ticket 🍸")
         attach_issue_prompt()
     else:
-        print("🍸 Initializing ginear 🍸")
         run_onboarding()
 
 
