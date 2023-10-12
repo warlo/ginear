@@ -61,18 +61,34 @@ def attach_issue_prompt() -> None:
     print("Selected:", selected)
 
 
+def set_team() -> str:
+    from pyfzf.pyfzf import FzfPrompt
+
+    team_ids = get_team_ids()
+    fzf = FzfPrompt()
+    selected_list = fzf.prompt(
+        [
+            *[f"[{team_id['name']}] – {team_id['id']}" for team_id in team_ids],
+        ]
+    )
+    if not selected_list:
+        raise ValueError("Missing team ids")
+
+    team_id = selected_list[0].split(" – ")[1]
+    if not team_id:
+        raise ValueError("No team id")
+    assert isinstance(team_id, str)
+    write_to_env("TEAM_ID", team_id)
+    return team_id
+
+
 def set_project(team_id: str) -> None:
     from pyfzf.pyfzf import FzfPrompt
 
     project_ids = get_project_ids_for_team(team_id)
     fzf = FzfPrompt()
     selected_list = fzf.prompt(
-        [
-            *[
-                f"[{project_id['name']}] – {project_id['id']}"
-                for project_id in project_ids
-            ],
-        ]
+        [f"[{project_id['name']}] – {project_id['id']}" for project_id in project_ids],
     )
     if not selected_list:
         raise ValueError("Missing projects")
@@ -105,8 +121,6 @@ def set_state(team_id: str) -> None:
 
 
 def run_onboarding() -> None:
-    from pyfzf.pyfzf import FzfPrompt
-
     if not LINEAR_API_TOKEN:
         import webbrowser
 
@@ -130,20 +144,7 @@ def run_onboarding() -> None:
 
     team_id = TEAM_ID
     if not team_id:
-        team_ids = get_team_ids()
-        fzf = FzfPrompt()
-        selected_list = fzf.prompt(
-            [
-                *[f"[{team_id['name']}] – {team_id['id']}" for team_id in team_ids],
-            ]
-        )
-        if not selected_list:
-            raise ValueError("Missing team ids")
-
-        team_id = selected_list[0].split(" – ")[1]
-        if not team_id:
-            raise ValueError("No team id")
-        write_to_env("TEAM_ID", team_id)
+        team_id = set_team()
 
     project_id = PROJECT_ID
     if not project_id:
@@ -162,6 +163,11 @@ def project() -> None:
         raise ValueError("Missing team_id")
 
     set_project(TEAM_ID)
+
+
+@app.command()
+def team() -> None:
+    set_team()
 
 
 @app.command()

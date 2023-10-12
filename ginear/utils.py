@@ -8,6 +8,7 @@ DOTFILE_PATH = Path.home() / ".ginear"
 
 def write_to_env(key: str, value: str) -> None:
     set_key(DOTFILE_PATH, key, value)
+    print(f"🍸 {key}={value} written to {DOTFILE_PATH}")
 
 
 def clear_env_key(key: str) -> None:
