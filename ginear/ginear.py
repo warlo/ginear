@@ -76,6 +76,9 @@ def run_onboarding() -> None:
         linear_api_token = input(
             "Insert Personal API Key (https://linear.app/settings/api): "
         )
+        if not linear_api_token:
+            raise ValueError("Invalid API token")
+
         write_to_env("LINEAR_API_TOKEN", linear_api_token)
         load_dotenv(dotenv_path=DOTFILE_PATH)
 
