@@ -28,12 +28,6 @@ USER_ID = os.environ.get("USER_ID")
 INITIAL_STATE_ID = os.environ.get("INITIAL_STATE_ID")
 
 
-def create_issue_prompt() -> None:
-    title = typer.prompt("Title")
-    description = typer.prompt("Description")
-    create_issue(title, description)
-
-
 def attach_issue_prompt() -> None:
     from pyfzf.pyfzf import FzfPrompt
 
@@ -55,7 +49,7 @@ def attach_issue_prompt() -> None:
             return
 
         if selected == "> Create new issue":
-            create_issue_prompt()
+            create()
             return
 
         issue = next(
@@ -168,6 +162,14 @@ def project() -> None:
         raise ValueError("Missing team_id")
 
     set_project(TEAM_ID)
+
+
+@app.command()
+def create() -> None:
+    print("🍸 Ginear ticket 🍸")
+    title = typer.prompt("Title")
+    description = typer.prompt("Description")
+    create_issue(title, description)
 
 
 @app.callback(invoke_without_command=True)
