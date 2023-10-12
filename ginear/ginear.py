@@ -1,6 +1,7 @@
 # /usr/bin/env python3
 import os
 
+import typer
 from dotenv import load_dotenv
 
 from ginear.queries import (
@@ -149,7 +150,7 @@ def run_onboarding() -> None:
     print("🍸 Onboarding success 🍸")
 
 
-def run() -> None:
+def main() -> None:
     if LINEAR_API_TOKEN and TEAM_ID and PROJECT_ID and USER_ID and INITIAL_STATE_ID:
         print("🍸 Ginear ticket 🍸")
         attach_issue_prompt()
@@ -158,5 +159,9 @@ def run() -> None:
         run_onboarding()
 
 
+def run() -> None:
+    typer.run(main)
+
+
 if __name__ == "__main__":
-    run()
+    typer.run(main)
