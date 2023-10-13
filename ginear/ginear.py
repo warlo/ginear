@@ -173,7 +173,7 @@ def team() -> None:
 @app.command()
 def create() -> None:
     title = typer.prompt("Title")
-    description = typer.prompt("Description")
+    description = typer.prompt("Description", default="", show_default=False)
     create_issue(title, description)
 
 
