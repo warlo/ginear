@@ -58,7 +58,7 @@ def attach_issue_prompt() -> None:
         branch_name = issue["branchName"]
         switch_branch(branch_name)
 
-    print("Selected:", selected)
+        print("Selected:", selected)
 
 
 def set_team() -> str:
