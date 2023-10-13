@@ -20,6 +20,5 @@ def switch_branch(branch_name: str) -> None:
 
     try:
         subprocess.run(["git", "switch", "-c", branch_name], check=True)
-        print(f"Created and switched to branch '{branch_name}' successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")

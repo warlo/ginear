@@ -165,6 +165,7 @@ def create_issue(title: str, description: str) -> None:
                 id
                 title
                 branchName
+                url
             }
         }
     }
@@ -186,7 +187,7 @@ def create_issue(title: str, description: str) -> None:
     if issue_create_response["success"]:
         issue = issue_create_response["issue"]
         print(
-            f"Issue created successfully. ID: {issue['id']}, Title: {issue['title']}, branch: {issue['branchName']}"
+            f"Issue created successfully. Title: {issue['title']}, Branch: {issue['branchName']}, URL: {issue['url']}"
         )
         switch_branch(issue["branchName"])
     else:
