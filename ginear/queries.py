@@ -4,7 +4,9 @@ import os
 from typing import Any, cast
 
 import requests
+import typer
 from dotenv import load_dotenv
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ginear.utils import DOTFILE_PATH, clear_env_key, switch_branch
 
@@ -113,11 +115,11 @@ def get_state_ids_for_team(team_id: str) -> list[dict[str, Any]]:
     return cast(list[dict[str, Any]], result["team"]["states"]["nodes"])
 
 
-def get_issues() -> list[dict[str, Any]]:
+def get_issues(titleQuery: str | None = None) -> list[dict[str, Any]]:
     query = """
-    query ($teamId: String!) {
+    query ($teamId: String!, $filter: IssueFilter) {
         team (id: $teamId) {
-            issues(first:250) {
+            issues(first:250, filter:$filter) {
                 edges {
                     node {
                         id
@@ -139,6 +141,7 @@ def get_issues() -> list[dict[str, Any]]:
 
     variables = {
         "teamId": TEAM_ID,
+        "filter": {"title": {"containsIgnoreCase": titleQuery}},
     }
 
     request_data = {"query": query, "variables": variables}
@@ -206,9 +209,13 @@ def call_linear_api(request_data: dict[str, Any]) -> dict[str, Any]:
 
     api_endpoint = "https://api.linear.app/graphql"
 
-    response = requests.post(
-        api_endpoint, data=json.dumps(request_data), headers=headers
-    )
+    with Progress(
+        SpinnerColumn(), TextColumn("[progress.description]{task.description}")
+    ) as progress:
+        progress.add_task(description="Pouring gin... 🍸", total=False)
+        response = requests.post(
+            api_endpoint, data=json.dumps(request_data), headers=headers
+        )
 
     response_data = response.json()
 
@@ -221,7 +228,8 @@ def call_linear_api(request_data: dict[str, Any]) -> dict[str, Any]:
                 == "AUTHENTICATION_ERROR"
             ):
                 clear_env_key("LINEAR_API_TOKEN")
-            raise ValueError("Invalid API token")
+            print("Invalid API token")
+            raise typer.Exit()
         except Exception:
             pass
 
