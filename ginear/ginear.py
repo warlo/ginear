@@ -172,6 +172,7 @@ def run_onboarding(force: bool = False) -> None:
 
 @app.command()
 def project() -> None:
+    """Set project_id"""
     if not TEAM_ID:
         print("Missing team_id")
         raise typer.Exit()
@@ -181,11 +182,27 @@ def project() -> None:
 
 @app.command()
 def team() -> None:
+    """Set team_id"""
     set_team()
 
 
 @app.command()
+def state() -> None:
+    """Set initial_state of created issues"""
+
+    if not TEAM_ID:
+        print("Missing team_id")
+        raise typer.Exit()
+
+    set_state(TEAM_ID)
+
+
+@app.command()
 def create() -> None:
+    """
+    Create Linear ticket
+    """
+
     title = typer.prompt("Title")
     description = typer.prompt("Description", default="", show_default=False)
     create_issue(title, description)
@@ -193,11 +210,29 @@ def create() -> None:
 
 @app.command()
 def init() -> None:
+    """
+    (Re)-run the onboarding to set the API key, team_id, project etc.
+    """
+
     run_onboarding(force=True)
+
+
+@app.command()
+def description(disable: bool) -> None:
+    """
+    Toggle `Created with Ginear` in the issue description
+    """
+
+    write_to_env("ADD_DESCRIPTION_TEXT", str(disable))
 
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context) -> None:
+    """
+    Running `gin` will prompt to attach or create new ticket
+
+    Runs onboarding if environment variables are not set
+    """
     if ctx.invoked_subcommand:
         return
 

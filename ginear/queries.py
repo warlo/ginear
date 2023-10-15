@@ -14,12 +14,12 @@ load_dotenv(dotenv_path=DOTFILE_PATH)
 
 
 TEAM_ID = os.environ.get("TEAM_ID")
-
 PROJECT_ID = os.environ.get("PROJECT_ID")
-
 USER_ID = os.environ.get("USER_ID")
-
 INITIAL_STATE_ID = os.environ.get("INITIAL_STATE_ID")
+ADD_DESCRIPTION_TEXT = (
+    True if os.environ.get("ADD_DESCRIPTION_TEXT", default="True") == "True" else False
+)
 
 
 def get_user_id() -> dict[str, Any]:
@@ -174,9 +174,15 @@ def create_issue(title: str, description: str) -> None:
     }
     """
 
+    full_description = (
+        f"{description}\n\n`Created with Ginear 🍸 – https://github.com/warlo/ginear`"
+        if ADD_DESCRIPTION_TEXT
+        else description
+    )
+
     mutation_variables = {
         "title": title,
-        "description": description,
+        "description": full_description,
         "teamId": TEAM_ID,
         "assigneeId": USER_ID,
         "stateId": INITIAL_STATE_ID,
