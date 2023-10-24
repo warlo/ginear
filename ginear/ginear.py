@@ -1,5 +1,6 @@
 # /usr/bin/env python3
 import os
+import readline
 from typing import Any
 
 import typer
