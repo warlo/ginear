@@ -69,7 +69,7 @@ def get_project_ids_for_team(team_id: str) -> list[dict[str, Any]]:
         team(id: $teamId) {
             id
             name
-            projects {
+            projects(first:250) {
                 nodes {
                     id
                     name
