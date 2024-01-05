@@ -19,6 +19,17 @@ def switch_branch(branch_name: str) -> None:
     import subprocess
 
     try:
-        subprocess.run(["git", "switch", "-c", branch_name], check=True)
+        branch_exists = subprocess.run(
+            ["git", "rev-parse", "--verify", branch_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        if branch_exists.returncode == 0:
+            # Branch exists, switch to it
+            subprocess.run(["git", "switch", branch_name], check=True)
+        else:
+            # Branch does not exist, create and switch to it
+            subprocess.run(["git", "switch", "-c", branch_name], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
