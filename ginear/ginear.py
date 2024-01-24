@@ -35,10 +35,12 @@ def get_fzf_string(issue: dict[str, Any]) -> str:
     return f"[{creator.get('name', '')[:10]}] – {issue['title']}"
 
 
-def attach_issue_prompt(titleQuery: str | None = None) -> None:
+def attach_issue_prompt(
+    *, search_query: str | None = None, project: bool = False
+) -> None:
     from pyfzf.pyfzf import FzfPrompt
 
-    issues = get_issues(titleQuery)
+    issues = get_issues(search_query)
     fzf = FzfPrompt()
     selected_list = fzf.prompt(
         [
@@ -52,10 +54,10 @@ def attach_issue_prompt(titleQuery: str | None = None) -> None:
         selected = selected_list[0]
         if selected == "> Search for specific issue title":
             search_query = typer.prompt("Search term")
-            return attach_issue_prompt(search_query)
+            return attach_issue_prompt(search_query=search_query, project=project)
 
         if selected == "> Create new issue":
-            return create()
+            return create(project=project)
 
         issue = next(
             issue for issue in issues if issue["title"] == selected.split(" – ")[1]
@@ -263,7 +265,13 @@ def commit(
 
 
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context) -> None:
+def main(
+    ctx: typer.Context,
+    project: Annotated[
+        bool,
+        typer.Option("-p"),
+    ] = False,
+) -> None:
     """
     Running `gin` will prompt to attach or create new ticket
 
@@ -273,7 +281,8 @@ def main(ctx: typer.Context) -> None:
         return
 
     if LINEAR_API_TOKEN and TEAM_ID and PROJECT_ID and USER_ID and INITIAL_STATE_ID:
-        attach_issue_prompt()
+        attach_issue_prompt(search_query=None, project=project)
+
     else:
         run_onboarding()
 

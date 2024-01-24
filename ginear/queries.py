@@ -115,7 +115,7 @@ def get_state_ids_for_team(team_id: str) -> list[dict[str, Any]]:
     return cast(list[dict[str, Any]], result["team"]["states"]["nodes"])
 
 
-def get_issues(titleQuery: str | None = None) -> list[dict[str, Any]]:
+def get_issues(search_query: str | None = None) -> list[dict[str, Any]]:
     query = """
     query ($teamId: String!, $filter: IssueFilter) {
         team (id: $teamId) {
@@ -141,7 +141,7 @@ def get_issues(titleQuery: str | None = None) -> list[dict[str, Any]]:
 
     variables = {
         "teamId": TEAM_ID,
-        "filter": {"title": {"containsIgnoreCase": titleQuery}},
+        "filter": {"title": {"containsIgnoreCase": search_query}},
     }
 
     request_data = {"query": query, "variables": variables}
