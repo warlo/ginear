@@ -14,7 +14,7 @@ from ginear.queries import (
     get_team_ids,
     get_user_id,
 )
-from ginear.utils import DOTFILE_PATH, switch_branch, write_to_env
+from ginear.utils import DOTFILE_PATH, git_commit, switch_branch, write_to_env
 
 load_dotenv(dotenv_path=DOTFILE_PATH)
 app = typer.Typer()
@@ -225,6 +225,17 @@ def description(disable: bool) -> None:
     """
 
     write_to_env("ADD_DESCRIPTION_TEXT", str(disable))
+
+
+@app.command()
+def commit() -> None:
+    """
+    Toggle `Created with Ginear` in the issue description
+    """
+
+    title = typer.prompt("Title")
+    create_issue(title, "")
+    git_commit(title)
 
 
 @app.callback(invoke_without_command=True)

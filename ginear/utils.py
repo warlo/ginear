@@ -33,3 +33,13 @@ def switch_branch(branch_name: str) -> None:
             subprocess.run(["git", "switch", "-c", branch_name], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
+
+
+def git_commit(msg: str) -> None:
+    import subprocess
+
+    try:
+        # Branch does not exist, create and switch to it
+        subprocess.run(["git", "commit", "-m", msg], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
