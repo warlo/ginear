@@ -42,6 +42,10 @@ Ginear offers the following commands to enhance your workflow:
 
 The `gin` command allows you to attach to an existing Linear issue or create a new one. When you run `gin`, Ginear will prompt you to select an existing issue from the list or create a new one.
 
+### `gin commit`
+
+Use `gin commit` to create a new Linear issue with automatic branch switching and accompanying git commit.
+
 ### `gin create`
 
 Use `gin create` to create a new Linear issue directly from the command line. Ginear will guide you through the issue creation process and automatically handle branch switching if necessary.
