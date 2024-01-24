@@ -90,7 +90,7 @@ def set_team() -> str:
     return team_id
 
 
-def set_project(team_id: str) -> None:
+def get_project(team_id: str) -> None:
     from pyfzf.pyfzf import FzfPrompt
 
     project_ids = get_project_ids_for_team(team_id)
@@ -107,7 +107,7 @@ def set_project(team_id: str) -> None:
     if not project_id:
         print("No project id")
         raise typer.Exit()
-    write_to_env("PROJECT_ID", project_id)
+    return project_id
 
 
 def set_state(team_id: str) -> None:
@@ -162,7 +162,8 @@ def run_onboarding(force: bool = False) -> None:
 
     project_id = PROJECT_ID
     if not project_id or force:
-        set_project(team_id=team_id)
+        project_id = get_project(team_id=team_id)
+        write_to_env("PROJECT_ID", project_id)
 
     initial_issue_state = INITIAL_STATE_ID
     if not initial_issue_state or force:
@@ -178,7 +179,8 @@ def project() -> None:
         print("Missing team_id")
         raise typer.Exit()
 
-    set_project(TEAM_ID)
+    project_id = get_project(TEAM_ID)
+    write_to_env("PROJECT_ID", project_id)
 
 
 @app.command()
@@ -199,14 +201,24 @@ def state() -> None:
 
 
 @app.command()
-def create() -> None:
+def create(
+    project: Annotated[
+        bool,
+        typer.Option("-p"),
+    ] = False
+) -> None:
     """
     Create Linear ticket
     """
 
+    selected_project_id = PROJECT_ID
+
+    if project:
+        selected_project_id = get_project(team_id=TEAM_ID)
+
     title = typer.prompt("Title")
     description = typer.prompt("Description", default="", show_default=False)
-    create_issue(title, description)
+    create_issue(title=title, description=description, project_id=selected_project_id)
 
 
 @app.command()
@@ -231,13 +243,22 @@ def description(disable: bool) -> None:
 def commit(
     message: Annotated[
         str, typer.Option("--message", "-m", prompt="Msg", help="git commit message")
-    ]
+    ],
+    project: Annotated[
+        bool,
+        typer.Option("-p"),
+    ] = False,
 ) -> None:
     """
     Toggle `Created with Ginear` in the issue description
     """
 
-    create_issue(message, "")
+    selected_project_id = PROJECT_ID
+
+    if project:
+        selected_project_id = get_project(team_id=TEAM_ID)
+
+    create_issue(title=message, description="", project_id=selected_project_id)
     git_commit(message)
 
 

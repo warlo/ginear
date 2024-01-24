@@ -150,7 +150,7 @@ def get_issues(titleQuery: str | None = None) -> list[dict[str, Any]]:
     return [edge["node"] for edge in result["team"]["issues"]["edges"]]
 
 
-def create_issue(title: str, description: str) -> None:
+def create_issue(*, title: str, description: str, project_id: str) -> None:
     mutation = """
     mutation IssueCreate($title: String!, $description: String!, $teamId: String!, $assigneeId: String!, $stateId: String!, $projectId: String!) {
     issueCreate(
@@ -186,7 +186,7 @@ def create_issue(title: str, description: str) -> None:
         "teamId": TEAM_ID,
         "assigneeId": USER_ID,
         "stateId": INITIAL_STATE_ID,
-        "projectId": PROJECT_ID,
+        "projectId": project_id,
     }
 
     request_data = {"query": mutation, "variables": mutation_variables}
