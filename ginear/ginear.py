@@ -1,7 +1,7 @@
 # /usr/bin/env python3
 import os
 import readline
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from dotenv import load_dotenv
@@ -228,14 +228,17 @@ def description(disable: bool) -> None:
 
 
 @app.command()
-def commit() -> None:
+def commit(
+    message: Annotated[
+        str, typer.Option("--message", "-m", prompt="Msg", help="git commit message")
+    ]
+) -> None:
     """
     Toggle `Created with Ginear` in the issue description
     """
 
-    title = typer.prompt("Title")
-    create_issue(title, "")
-    git_commit(title)
+    create_issue(message, "")
+    git_commit(message)
 
 
 @app.callback(invoke_without_command=True)
