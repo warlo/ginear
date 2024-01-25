@@ -252,7 +252,7 @@ def commit(
     ] = False,
 ) -> None:
     """
-    Toggle `Created with Ginear` in the issue description
+    Create a Linear ticket, switch to its branch and commit to git
     """
 
     selected_project_id = PROJECT_ID
