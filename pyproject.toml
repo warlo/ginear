@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ginear"
-version = "0.1.21"
+version = "0.1.22"
 description = ""
 authors = ["Hans-Wilhelm Warlo <5417271+warlo@users.noreply.github.com>"]
 readme = "README.md"
