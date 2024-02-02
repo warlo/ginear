@@ -38,7 +38,7 @@ INITIAL_STATE_ID = os.environ.get("INITIAL_STATE_ID")
 
 def get_fzf_string(issue: dict[str, Any], max_issue_title_length: int = 100) -> str:
     creator = issue["creator"] or {}
-    return f"[{creator.get('name', '')[:10]}] – {issue['title'][:max_issue_title_length].ljust(max_issue_title_length)}[{issue['state']['name']}]"
+    return f"[{creator.get('name', '')[:10]}] – {issue['title'][:max_issue_title_length].ljust(max_issue_title_length)} – [{issue['state']['name']}]"
 
 
 def get_fzf_strings(issues: list[dict[str, Any]]) -> list[str]:
@@ -74,7 +74,9 @@ def attach_issue_prompt(
             return create(project=project)
 
         issue = next(
-            issue for issue in issues if issue["title"] == selected.split(" – ")[1]
+            issue
+            for issue in issues
+            if issue["title"] == selected.split(" – ")[1].strip()
         )
         branch_name = issue["branchName"]
         switch_branch(branch_name)
