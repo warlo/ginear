@@ -17,6 +17,9 @@ TEAM_ID = os.environ.get("TEAM_ID")
 PROJECT_ID = os.environ.get("PROJECT_ID")
 USER_ID = os.environ.get("USER_ID")
 INITIAL_STATE_ID = os.environ.get("INITIAL_STATE_ID")
+EXCLUDED_STATES = os.environ.get("EXCLUDED_STATES", "")
+EXCLUDED_STATES = EXCLUDED_STATES.split(",") if EXCLUDED_STATES else []
+
 ADD_DESCRIPTION_TEXT = (
     True if os.environ.get("ADD_DESCRIPTION_TEXT", default="True") == "True" else False
 )
@@ -128,6 +131,9 @@ def get_issues(search_query: str | None = None) -> list[dict[str, Any]]:
                         creator {
                             name
                         }
+                        state {
+                            name
+                        }
                     }
                 }
                 pageInfo {
@@ -141,7 +147,10 @@ def get_issues(search_query: str | None = None) -> list[dict[str, Any]]:
 
     variables = {
         "teamId": TEAM_ID,
-        "filter": {"title": {"containsIgnoreCase": search_query}},
+        "filter": {
+            "title": {"containsIgnoreCase": search_query},
+            "state": {"id": {"nin": EXCLUDED_STATES}},
+        },
     }
 
     request_data = {"query": query, "variables": variables}

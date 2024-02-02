@@ -14,7 +14,13 @@ from ginear.queries import (
     get_team_ids,
     get_user_id,
 )
-from ginear.utils import DOTFILE_PATH, git_commit, switch_branch, write_to_env
+from ginear.utils import (
+    DOTFILE_PATH,
+    append_or_remove_env_list,
+    git_commit,
+    switch_branch,
+    write_to_env,
+)
 
 load_dotenv(dotenv_path=DOTFILE_PATH)
 app = typer.Typer()
@@ -30,9 +36,17 @@ USER_ID = os.environ.get("USER_ID")
 INITIAL_STATE_ID = os.environ.get("INITIAL_STATE_ID")
 
 
-def get_fzf_string(issue: dict[str, Any]) -> str:
+def get_fzf_string(issue: dict[str, Any], max_issue_title_length: int = 100) -> str:
     creator = issue["creator"] or {}
-    return f"[{creator.get('name', '')[:10]}] – {issue['title']}"
+    return f"[{creator.get('name', '')[:10]}] – {issue['title'][:max_issue_title_length].ljust(max_issue_title_length)}[{issue['state']['name']}]"
+
+
+def get_fzf_strings(issues: list[dict[str, Any]]) -> list[str]:
+    max_issue_title_length = max([len(issue["title"]) for issue in issues])
+    return [
+        get_fzf_string(issue, max_issue_title_length=max_issue_title_length)
+        for issue in issues
+    ]
 
 
 def attach_issue_prompt(
@@ -46,7 +60,7 @@ def attach_issue_prompt(
         [
             "> Create new issue",
             "> Search for specific issue title",
-            *[get_fzf_string(issue) for issue in issues],
+            *get_fzf_strings(issues),
         ],
         fzf_options="--header 'Issue missing? Select \"> Search for specific issue\"'",
     )
@@ -134,6 +148,28 @@ def set_state(team_id: str) -> None:
     write_to_env("INITIAL_STATE_ID", initial_issue_state)
 
 
+def append_or_remove_to_exclude_state(team_id: str) -> None:
+    from pyfzf.pyfzf import FzfPrompt
+
+    state_ids = get_state_ids_for_team(team_id)
+    fzf = FzfPrompt()
+    selected_list = fzf.prompt(
+        [
+            f"[{initial_issue_state['name']}] – {initial_issue_state['id']}"
+            for initial_issue_state in state_ids
+        ],
+        fzf_options="--header 'Select the state you want to exclude when retrieving issues'",
+    )
+    if not selected_list:
+        print("Missing states")
+        raise typer.Exit()
+    excluded_state = selected_list[0].split(" – ")[1]
+    if not excluded_state:
+        print("No state selected")
+        raise typer.Exit()
+    append_or_remove_env_list("EXCLUDED_STATES", excluded_state)
+
+
 def run_onboarding(force: bool = False) -> None:
     if not LINEAR_API_TOKEN or force:
         import webbrowser
@@ -200,6 +236,17 @@ def state() -> None:
         raise typer.Exit()
 
     set_state(TEAM_ID)
+
+
+@app.command()
+def exclude_state() -> None:
+    """Add state to list of excluded states"""
+
+    if not TEAM_ID:
+        print("Missing team_id")
+        raise typer.Exit()
+
+    append_or_remove_to_exclude_state(TEAM_ID)
 
 
 @app.command()
