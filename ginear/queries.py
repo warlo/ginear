@@ -159,9 +159,9 @@ def get_issues(search_query: str | None = None) -> list[dict[str, Any]]:
     return [edge["node"] for edge in result["team"]["issues"]["edges"]]
 
 
-def create_issue(*, title: str, description: str, project_id: str) -> None:
+def create_issue(*, title: str, description: str, project_id: str | None) -> None:
     mutation = """
-    mutation IssueCreate($title: String!, $description: String!, $teamId: String!, $assigneeId: String!, $stateId: String!, $projectId: String!) {
+    mutation IssueCreate($title: String!, $description: String!, $teamId: String!, $assigneeId: String!, $stateId: String!, $projectId: String) {
     issueCreate(
         input: {
             title: $title
@@ -189,14 +189,16 @@ def create_issue(*, title: str, description: str, project_id: str) -> None:
         else description
     )
 
-    mutation_variables = {
+    mutation_variables: dict[str, Any] = {
         "title": title,
         "description": full_description,
         "teamId": TEAM_ID,
         "assigneeId": USER_ID,
         "stateId": INITIAL_STATE_ID,
-        "projectId": project_id,
     }
+
+    if project_id:
+        mutation_variables["projectId"] = project_id
 
     request_data = {"query": mutation, "variables": mutation_variables}
     result = call_linear_api(request_data)

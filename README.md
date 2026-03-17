@@ -18,9 +18,15 @@ brew install fzf
 
 ## Installation
 
-You can install Ginear using pip:
+You can install Ginear using pipx (recommended for CLI tools):
 
-```python
+```bash
+pipx install ginear
+```
+
+Or using pip:
+
+```bash
 pip install ginear
 ```
 

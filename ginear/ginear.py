@@ -17,6 +17,7 @@ from ginear.queries import (
 from ginear.utils import (
     DOTFILE_PATH,
     append_or_remove_env_list,
+    clear_env_key,
     git_commit,
     switch_branch,
     write_to_env,
@@ -108,18 +109,24 @@ def set_team() -> str:
     return team_id
 
 
-def get_project(team_id: str) -> None:
+def get_project(team_id: str) -> str | None:
     from pyfzf.pyfzf import FzfPrompt
 
     project_ids = get_project_ids_for_team(team_id)
     fzf = FzfPrompt()
     selected_list = fzf.prompt(
-        [f"[{project_id['name']}] – {project_id['id']}" for project_id in project_ids],
+        [
+            "> No project",
+            *[f"[{project_id['name']}] – {project_id['id']}" for project_id in project_ids],
+        ],
         fzf_options="--header 'Set the project you want your issues to be created in'",
     )
     if not selected_list:
         print("Missing projects")
         raise typer.Exit()
+
+    if selected_list[0] == "> No project":
+        return None
 
     project_id = selected_list[0].split(" – ")[1]
     if not project_id:
@@ -176,7 +183,7 @@ def run_onboarding(force: bool = False) -> None:
     if not LINEAR_API_TOKEN or force:
         import webbrowser
 
-        webbrowser.open("https://linear.app/settings/api")
+        webbrowser.open("https://linear.app/settings/account/security")
         linear_api_token = typer.prompt(
             "Insert Personal API Key (https://linear.app/settings/api)"
         )
@@ -203,7 +210,10 @@ def run_onboarding(force: bool = False) -> None:
     project_id = PROJECT_ID
     if not project_id or force:
         project_id = get_project(team_id=team_id)
-        write_to_env("PROJECT_ID", project_id)
+        if project_id:
+            write_to_env("PROJECT_ID", project_id)
+        else:
+            clear_env_key("PROJECT_ID")
 
     initial_issue_state = INITIAL_STATE_ID
     if not initial_issue_state or force:
@@ -264,7 +274,7 @@ def create(
 
     selected_project_id = PROJECT_ID
 
-    if project:
+    if project or not selected_project_id:
         selected_project_id = get_project(team_id=TEAM_ID)
 
     title = typer.prompt("Title")
@@ -306,7 +316,7 @@ def commit(
 
     selected_project_id = PROJECT_ID
 
-    if project:
+    if project or not selected_project_id:
         selected_project_id = get_project(team_id=TEAM_ID)
 
     create_issue(title=message, description="", project_id=selected_project_id)
@@ -329,7 +339,7 @@ def main(
     if ctx.invoked_subcommand:
         return
 
-    if LINEAR_API_TOKEN and TEAM_ID and PROJECT_ID and USER_ID and INITIAL_STATE_ID:
+    if LINEAR_API_TOKEN and TEAM_ID and USER_ID and INITIAL_STATE_ID:
         attach_issue_prompt(search_query=None, project=project)
 
     else:
