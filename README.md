@@ -52,9 +52,29 @@ The `gin` command allows you to attach to an existing Linear issue or create a n
 
 Use `gin commit` to create a new Linear issue with automatic branch switching and accompanying git commit.
 
+Pass `--title`/`-t` (and optional `--description`/`-d`) to skip the interactive prompt. Add `--json` to print the created issue as JSON.
+
 ### `gin create`
 
 Use `gin create` to create a new Linear issue directly from the command line. Ginear will guide you through the issue creation process and automatically handle branch switching if necessary.
+
+Non-interactive flags:
+
+- `--title, -t` — skip the title prompt
+- `--description, -d` — description text
+- `--no-switch` — do not switch to the issue's branch
+- `--json` — print the created issue as JSON (useful for scripts and AI agents)
+
+### `gin attach <identifier>`
+
+Attach to an existing Linear issue by identifier (e.g. `ENG-123`) and switch to its branch. Supports `--no-switch` and `--json`.
+
+### `gin search [query]`
+
+Search Linear issues by title (substring, case-insensitive). Non-interactive — intended for scripts and AI agents.
+
+- `--limit, -n` — max results (default 25)
+- `--json` — print results as JSON
 
 ### `gin project`
 
@@ -63,3 +83,18 @@ With `gin project`, you can switch to a different Linear project within your org
 ### `gin team`
 
 The `gin team` command allows you to switch between different teams within your organization. When you run `gin team`, Ginear will prompt you to select the team you want to work with from a list of available options.
+
+## Scripting / AI usage
+
+The `search`, `attach`, `create --title ...`, and `commit --title ...` commands never prompt, making them safe to call from scripts or AI coding agents (e.g. Claude Code). Use `--json` for structured output:
+
+```bash
+# Find candidate tickets
+gin search "flaky login" --json
+
+# Attach to an existing ticket without switching branch
+gin attach ENG-123 --no-switch --json
+
+# Create a ticket without switching branch
+gin create -t "Refactor auth middleware" -d "Extracts shared logic" --no-switch --json
+```

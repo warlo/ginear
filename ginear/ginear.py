@@ -1,4 +1,5 @@
 # /usr/bin/env python3
+import json as json_module
 import os
 import readline
 from typing import Annotated, Any
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 
 from ginear.queries import (
     create_issue,
+    get_issue_by_identifier,
     get_issues,
     get_project_ids_for_team,
     get_state_ids_for_team,
@@ -263,23 +265,49 @@ def exclude_state() -> None:
 
 @app.command()
 def create(
-    project: Annotated[
+    project: Annotated[bool, typer.Option("-p")] = False,
+    title: Annotated[
+        str | None,
+        typer.Option("--title", "-t", help="Issue title (skips prompt when set)"),
+    ] = None,
+    description: Annotated[
+        str,
+        typer.Option("--description", "-d", help="Issue description"),
+    ] = "",
+    no_switch: Annotated[
         bool,
-        typer.Option("-p"),
-    ] = False
+        typer.Option("--no-switch", help="Do not switch to the issue's branch"),
+    ] = False,
+    json: Annotated[
+        bool,
+        typer.Option("--json", help="Print the created issue as JSON"),
+    ] = False,
 ) -> None:
     """
-    Create Linear ticket
+    Create Linear ticket. Non-interactive when --title is provided.
     """
 
     selected_project_id = PROJECT_ID
 
-    if project or not selected_project_id:
+    if project or (not selected_project_id and title is None):
         selected_project_id = get_project(team_id=TEAM_ID)
 
-    title = typer.prompt("Title")
-    description = typer.prompt("Description", default="", show_default=False)
-    create_issue(title=title, description=description, project_id=selected_project_id)
+    if title is None:
+        title = typer.prompt("Title")
+        description = typer.prompt("Description", default="", show_default=False)
+
+    issue = create_issue(
+        title=title,
+        description=description,
+        project_id=selected_project_id,
+        switch=not no_switch,
+        quiet=json,
+    )
+
+    if issue is None:
+        raise typer.Exit(code=1)
+    if json:
+        typer.echo(json_module.dumps(issue))
 
 
 @app.command()
@@ -309,18 +337,116 @@ def commit(
         bool,
         typer.Option("-p"),
     ] = False,
+    title: Annotated[
+        str | None,
+        typer.Option("--title", "-t", help="Issue title (defaults to --message)"),
+    ] = None,
+    description: Annotated[
+        str,
+        typer.Option("--description", "-d", help="Issue description"),
+    ] = "",
+    json: Annotated[
+        bool,
+        typer.Option("--json", help="Print the created issue as JSON"),
+    ] = False,
 ) -> None:
     """
-    Create a Linear ticket, switch to its branch and commit to git
+    Create a Linear ticket, switch to its branch and commit to git.
+
+    Non-interactive when --title is provided (title defaults to --message otherwise).
     """
 
     selected_project_id = PROJECT_ID
 
-    if project or not selected_project_id:
+    if project or (not selected_project_id and title is None):
         selected_project_id = get_project(team_id=TEAM_ID)
 
-    create_issue(title=message, description="", project_id=selected_project_id)
+    issue = create_issue(
+        title=title or message,
+        description=description,
+        project_id=selected_project_id,
+        quiet=json,
+    )
+    if issue is None:
+        raise typer.Exit(code=1)
+
     git_commit(message)
+
+    if json:
+        typer.echo(json_module.dumps(issue))
+
+
+@app.command()
+def attach(
+    identifier: Annotated[
+        str,
+        typer.Argument(help="Issue identifier, e.g. ENG-123"),
+    ],
+    no_switch: Annotated[
+        bool,
+        typer.Option("--no-switch", help="Do not switch to the issue's branch"),
+    ] = False,
+    json: Annotated[
+        bool,
+        typer.Option("--json", help="Print the issue as JSON"),
+    ] = False,
+) -> None:
+    """
+    Attach to an existing Linear issue by identifier and switch to its branch.
+    """
+    if not TEAM_ID:
+        print("Missing team_id. Run `gin init`.")
+        raise typer.Exit(code=1)
+
+    issue = get_issue_by_identifier(identifier)
+    if issue is None:
+        print(f"Issue '{identifier}' not found.")
+        raise typer.Exit(code=1)
+
+    if not no_switch:
+        switch_branch(issue["branchName"])
+
+    if json:
+        typer.echo(json_module.dumps(issue))
+    else:
+        print(
+            f"Attached to {issue['identifier']} – {issue['title']} – {issue['url']}"
+        )
+
+
+@app.command()
+def search(
+    query: Annotated[
+        str | None,
+        typer.Argument(help="Search term (substring, case-insensitive)"),
+    ] = None,
+    limit: Annotated[
+        int,
+        typer.Option("--limit", "-n", help="Max results"),
+    ] = 25,
+    json: Annotated[
+        bool,
+        typer.Option("--json", help="Print results as JSON"),
+    ] = False,
+) -> None:
+    """
+    Search Linear issues by title (non-interactive).
+    """
+    if not TEAM_ID:
+        print("Missing team_id. Run `gin init`.")
+        raise typer.Exit(code=1)
+
+    issues = get_issues(search_query=query, limit=limit)
+
+    if json:
+        typer.echo(json_module.dumps(issues))
+        return
+
+    for issue in issues:
+        state = issue.get("state", {}).get("name", "")
+        typer.echo(
+            f"{issue['identifier']}\t[{state}]\t{issue['title']}\t{issue['url']}"
+        )
 
 
 @app.callback(invoke_without_command=True)

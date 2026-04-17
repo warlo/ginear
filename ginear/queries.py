@@ -118,16 +118,20 @@ def get_state_ids_for_team(team_id: str) -> list[dict[str, Any]]:
     return cast(list[dict[str, Any]], result["team"]["states"]["nodes"])
 
 
-def get_issues(search_query: str | None = None) -> list[dict[str, Any]]:
+def get_issues(
+    search_query: str | None = None, limit: int = 250
+) -> list[dict[str, Any]]:
     query = """
-    query ($teamId: String!, $filter: IssueFilter) {
+    query ($teamId: String!, $filter: IssueFilter, $first: Int!) {
         team (id: $teamId) {
-            issues(first:250, filter:$filter) {
+            issues(first:$first, filter:$filter) {
                 edges {
                     node {
                         id
+                        identifier
                         title
                         branchName
+                        url
                         creator {
                             name
                         }
@@ -145,8 +149,9 @@ def get_issues(search_query: str | None = None) -> list[dict[str, Any]]:
     }
     """
 
-    variables = {
+    variables: dict[str, Any] = {
         "teamId": TEAM_ID,
+        "first": limit,
         "filter": {
             "title": {"containsIgnoreCase": search_query},
             "state": {"id": {"nin": EXCLUDED_STATES}},
@@ -159,7 +164,51 @@ def get_issues(search_query: str | None = None) -> list[dict[str, Any]]:
     return [edge["node"] for edge in result["team"]["issues"]["edges"]]
 
 
-def create_issue(*, title: str, description: str, project_id: str | None) -> None:
+def get_issue_by_identifier(identifier: str) -> dict[str, Any] | None:
+    query = """
+    query ($teamId: String!, $filter: IssueFilter) {
+        team (id: $teamId) {
+            issues(first: 1, filter: $filter) {
+                edges {
+                    node {
+                        id
+                        identifier
+                        title
+                        branchName
+                        url
+                        state { name }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    variables: dict[str, Any] = {
+        "teamId": TEAM_ID,
+        "filter": {"number": {"eq": _identifier_to_number(identifier)}},
+    }
+
+    request_data = {"query": query, "variables": variables}
+    result = call_linear_api(request_data)
+    edges = result["team"]["issues"]["edges"]
+    return edges[0]["node"] if edges else None
+
+
+def _identifier_to_number(identifier: str) -> int:
+    """Accept either 'ENG-123' or '123' and return the issue number."""
+    tail = identifier.rsplit("-", 1)[-1]
+    return int(tail)
+
+
+def create_issue(
+    *,
+    title: str,
+    description: str,
+    project_id: str | None,
+    switch: bool = True,
+    quiet: bool = False,
+) -> dict[str, Any] | None:
     mutation = """
     mutation IssueCreate($title: String!, $description: String!, $teamId: String!, $assigneeId: String!, $stateId: String!, $projectId: String) {
     issueCreate(
@@ -175,6 +224,7 @@ def create_issue(*, title: str, description: str, project_id: str | None) -> Non
         success
             issue {
                 id
+                identifier
                 title
                 branchName
                 url
@@ -204,14 +254,19 @@ def create_issue(*, title: str, description: str, project_id: str | None) -> Non
     result = call_linear_api(request_data)
     issue_create_response = result["issueCreate"]
 
-    if issue_create_response["success"]:
-        issue = issue_create_response["issue"]
+    if not issue_create_response["success"]:
+        if not quiet:
+            print("Issue creation failed.")
+        return None
+
+    issue = cast(dict[str, Any], issue_create_response["issue"])
+    if not quiet:
         print(
             f"Issue created successfully. Title: {issue['title']}, Branch: {issue['branchName']}, URL: {issue['url']}"
         )
+    if switch:
         switch_branch(issue["branchName"])
-    else:
-        print("Issue creation failed.")
+    return issue
 
 
 def call_linear_api(request_data: dict[str, Any]) -> dict[str, Any]:
