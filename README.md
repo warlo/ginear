@@ -98,3 +98,25 @@ gin attach ENG-123 --no-switch --json
 # Create a ticket without switching branch
 gin create -t "Refactor auth middleware" -d "Extracts shared logic" --no-switch --json
 ```
+
+## Claude Code skill
+
+Ginear ships a [Claude Code](https://claude.com/claude-code) skill at [`claude-code/ginear-linear-ticket/`](claude-code/ginear-linear-ticket/SKILL.md). It teaches Claude when to search for an existing Linear ticket, when to create one, and how to call `gin` non-interactively.
+
+Install (user scope — applies to every project):
+
+```bash
+mkdir -p ~/.claude/skills/ginear-linear-ticket
+curl -fsSL https://raw.githubusercontent.com/warlo/ginear/main/claude-code/ginear-linear-ticket/SKILL.md \
+  -o ~/.claude/skills/ginear-linear-ticket/SKILL.md
+```
+
+Or project scope (check into a specific repo):
+
+```bash
+mkdir -p .claude/skills/ginear-linear-ticket
+curl -fsSL https://raw.githubusercontent.com/warlo/ginear/main/claude-code/ginear-linear-ticket/SKILL.md \
+  -o .claude/skills/ginear-linear-ticket/SKILL.md
+```
+
+Restart Claude Code after installing so it picks up the new skill.
